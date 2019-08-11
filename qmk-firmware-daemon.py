@@ -166,8 +166,8 @@ def transition_keyboard_to_state(app_type):
         return
     current_app_type = app_type
     if current_app_type == APP_TYPE.NORMAL:
-        print("switched to base layer")
         send_payload(switch_to_base_payload)
+        print("switched to base layer")
     elif current_app_type == APP_TYPE.GAME0:
         send_payload(switch_to_game0_payload)
         print("switched to game0 layer")
