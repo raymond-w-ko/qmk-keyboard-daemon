@@ -201,6 +201,8 @@ def main(args: list):
             w = win32gui.GetForegroundWindow()
             wt = get_window_type(w)
             transition_keyboard_to_state(wt)
+        except KeyboardInterrupt:
+            sys.exit(0)
         except:
             pass
 
