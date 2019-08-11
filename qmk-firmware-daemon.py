@@ -195,14 +195,14 @@ def get_window_type(w):
 
 
 def main(args: list):
-    try:
-        while True:
+    while True:
+        try:
             time.sleep(1)
             w = win32gui.GetForegroundWindow()
             wt = get_window_type(w)
             transition_keyboard_to_state(wt)
-    except:
-        pass
+        except:
+            pass
 
 
 if __name__ == "__main__":
