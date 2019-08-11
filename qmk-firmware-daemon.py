@@ -1,43 +1,204 @@
 #!/usr/bin/env python3
 import os
 import sys
+import time
+from enum import Enum
+
 import pywinusb.hid as hid
+import win32con
+import win32api
+import win32gui
+
+
+class APP_TYPE(Enum):
+    NORMAL = 1
+    GAME0 = 2
+    GAME1 = 3
+
+
+################################################################################
+
+PJRC_VENDOR_ID = 0xFF31
+CONSOLE_IN_USAGE = (PJRC_VENDOR_ID, 0x76)
+
+PRIVATE_VENDOR_ID = 0xFF60
+RAW_IN_USAGE = (PRIVATE_VENDOR_ID, 0x63)
+
+################################################################################
+
+# payload size is 32 bytes
+switch_to_base_payload = [
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+]
+switch_to_game0_payload = [
+    3,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+]
+switch_to_game1_payload = [
+    4,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+]
+
+################################################################################
 
 
 def is_qmk_device(device):
     return device.vendor_id == 0xCB10 and device.product_id == 0x1256
 
 
-def main(args: list):
-    all_devices = hid.find_all_hid_devices()
-    qmk_devices = list(filter(is_qmk_device, all_devices))
+all_devices = hid.find_all_hid_devices()
+qmk_devices = list(filter(is_qmk_device, all_devices))
+current_app_type = APP_TYPE.NORMAL
 
-    pjrc_page_id = 0xFF31
-    console_in_usage = (pjrc_page_id, 0x76)
-    target_usage = hid.get_full_usage_id(console_in_usage[0], console_in_usage[1])
-    # pyaload size is 32 bytes
-    payload = [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+def send_payload(payload: list):
+    target_usage = hid.get_full_usage_id(RAW_IN_USAGE[0], RAW_IN_USAGE[1])
     for device in qmk_devices:
-        print(device.device_path)
+        # print(device.device_path)
         try:
             device.open()
-            reports = (
-                device.find_input_reports()
-                + device.find_output_reports()
-                + device.find_feature_reports()
-            )
+            reports = device.find_output_reports()
             for report in reports:
                 for k, v in report.items():
-                    if v.page_id != pjrc_page_id:
-                        continue
-                    print("%s: %s" % (k, v))
+                    # print("%s: %s" % (k, v))
                     if target_usage in report:
-                        print("FOUND IT!!!")
-                        report[target_usage] = value
+                        print("found matching device, sending payload")
+                        report[target_usage] = payload
                         report.send()
         finally:
             device.close()
+
+
+def transition_keyboard_to_state(app_type):
+    global current_app_type
+    if current_app_type == app_type:
+        return
+    current_app_type = app_type
+    if current_app_type == APP_TYPE.NORMAL:
+        print("switched to base layer")
+        send_payload(switch_to_base_payload)
+    elif current_app_type == APP_TYPE.GAME0:
+        send_payload(switch_to_game0_payload)
+        print("switched to game0 layer")
+    elif current_app_type == APP_TYPE.GAME1:
+        send_payload(switch_to_game1_payload)
+        print("switched to game1 layer")
+
+
+def get_rect_size(rect):
+    w = rect[2] - rect[0]
+    h = rect[3] - rect[1]
+    size = (w, h)
+    return size
+
+
+def get_window_type(w):
+    monitor_w = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
+    monitor_h = win32api.GetSystemMetrics(win32con.SM_CYSCREEN)
+    rect = win32gui.GetWindowRect(w)
+    size = get_rect_size(rect)
+    if size[0] == monitor_w and size[1] == monitor_h:
+        transition_keyboard_to_state(APP_TYPE.GAME0)
+    else:
+        transition_keyboard_to_state(APP_TYPE.NORMAL)
+
+
+def main(args: list):
+    while True:
+        time.sleep(1)
+        w = win32gui.GetForegroundWindow()
+        t = get_window_type(w)
 
 
 if __name__ == "__main__":
