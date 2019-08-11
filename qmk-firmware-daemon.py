@@ -189,16 +189,20 @@ def get_window_type(w):
     rect = win32gui.GetWindowRect(w)
     size = get_rect_size(rect)
     if size[0] == monitor_w and size[1] == monitor_h:
-        transition_keyboard_to_state(APP_TYPE.GAME0)
+        return APP_TYPE.GAME0
     else:
-        transition_keyboard_to_state(APP_TYPE.NORMAL)
+        return APP_TYPE.NORMAL
 
 
 def main(args: list):
-    while True:
-        time.sleep(1)
-        w = win32gui.GetForegroundWindow()
-        t = get_window_type(w)
+    try:
+        while True:
+            time.sleep(1)
+            w = win32gui.GetForegroundWindow()
+            wt = get_window_type(w)
+            transition_keyboard_to_state(wt)
+    except:
+        pass
 
 
 if __name__ == "__main__":
