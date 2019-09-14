@@ -188,6 +188,13 @@ def get_window_type(w):
     monitor_h = win32api.GetSystemMetrics(win32con.SM_CYSCREEN)
     rect = win32gui.GetWindowRect(w)
     size = get_rect_size(rect)
+    classname = win32gui.GetClassName(w)
+    title = win32gui.GetWindowText(w)
+    # print("switched to window class '%s' window title '%s'" % (classname, title, ))
+    if title.endswith(" - Remote Desktop Connection"):
+        return APP_TYPE.NORMAL
+    elif title.startswith("Borderlands® 3"):
+        return APP_TYPE.GAME1
     if size[0] == monitor_w and size[1] == monitor_h:
         return APP_TYPE.GAME0
     else:
@@ -197,7 +204,7 @@ def get_window_type(w):
 def main(args: list):
     while True:
         try:
-            time.sleep(1)
+            time.sleep(0.1)
             w = win32gui.GetForegroundWindow()
             wt = get_window_type(w)
             transition_keyboard_to_state(wt)
