@@ -195,6 +195,8 @@ def get_window_type(w):
         return APP_TYPE.NORMAL
     elif title.startswith("Borderlands® 3"):
         return APP_TYPE.GAME1
+    elif "thinkorswim" in title:
+        return APP_TYPE.NORMAL
     if size[0] == monitor_w and size[1] == monitor_h:
         return APP_TYPE.GAME0
     else:
