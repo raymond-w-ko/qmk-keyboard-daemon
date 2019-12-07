@@ -10,6 +10,9 @@ import win32api
 import win32gui
 
 
+DEBUG = False
+
+
 class APP_TYPE(Enum):
     NORMAL = 1
     GAME0 = 2
@@ -183,17 +186,32 @@ def get_rect_size(rect):
     return size
 
 
+last_classname = None
+last_title = None
+
+
 def get_window_type(w):
+    global last_classname
+    global last_title
+
     monitor_w = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
     monitor_h = win32api.GetSystemMetrics(win32con.SM_CYSCREEN)
     rect = win32gui.GetWindowRect(w)
     size = get_rect_size(rect)
     classname = win32gui.GetClassName(w)
     title = win32gui.GetWindowText(w)
-    # print("switched to window class '%s' window title '%s'" % (classname, title, ))
+    if debug:
+        if last_classname != classname or last_title != title:
+            print("switched to window class '%s' window title '%s'" % (classname, title, ))
+            last_classname = classname
+            last_title = title
     if title.endswith(" - Remote Desktop Connection"):
         return APP_TYPE.NORMAL
+    elif title.endswith("TightVNC Viewer"):
+        return APP_TYPE.NORMAL
     elif title.startswith("Borderlands® 3"):
+        return APP_TYPE.GAME1
+    elif title.startswith("CODE VEIN"):
         return APP_TYPE.GAME1
     elif "thinkorswim" in title:
         return APP_TYPE.NORMAL
@@ -204,6 +222,9 @@ def get_window_type(w):
 
 
 def main(args: list):
+    global debug
+    if "debug" in args:
+        debug = True
     while True:
         try:
             time.sleep(0.1)
