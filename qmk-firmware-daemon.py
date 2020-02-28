@@ -193,6 +193,7 @@ last_title = None
 def get_window_type(w):
     global last_classname
     global last_title
+    global debug
 
     monitor_w = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
     monitor_h = win32api.GetSystemMetrics(win32con.SM_CYSCREEN)
@@ -200,11 +201,11 @@ def get_window_type(w):
     size = get_rect_size(rect)
     classname = win32gui.GetClassName(w)
     title = win32gui.GetWindowText(w)
-    if debug:
-        if last_classname != classname or last_title != title:
+    if last_classname != classname or last_title != title:
+        if debug:
             print("switched to window class '%s' window title '%s'" % (classname, title, ))
-            last_classname = classname
-            last_title = title
+        last_classname = classname
+        last_title = title
     if title.endswith(" - Remote Desktop Connection"):
         return APP_TYPE.NORMAL
     elif title.endswith("TightVNC Viewer"):
