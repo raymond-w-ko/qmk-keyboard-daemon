@@ -10,7 +10,7 @@ import win32api
 import win32gui
 
 
-DEBUG = False
+DEBUG = True
 
 
 class APP_TYPE(Enum):
@@ -137,7 +137,7 @@ switch_to_game1_payload = [
 
 
 def is_qmk_device(device):
-    return device.vendor_id == 0xCB10 and device.product_id == 0x1256
+    return device.vendor_id == 0xCB10 and device.product_id == 0x2256
 
 
 all_devices = hid.find_all_hid_devices()
@@ -193,7 +193,7 @@ last_title = None
 def get_window_type(w):
     global last_classname
     global last_title
-    global debug
+    global DEBUG
 
     monitor_w = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
     monitor_h = win32api.GetSystemMetrics(win32con.SM_CYSCREEN)
@@ -202,7 +202,7 @@ def get_window_type(w):
     classname = win32gui.GetClassName(w)
     title = win32gui.GetWindowText(w)
     if last_classname != classname or last_title != title:
-        if debug:
+        if DEBUG:
             print("switched to window class '%s' window title '%s'" % (classname, title, ))
         last_classname = classname
         last_title = title
@@ -223,9 +223,9 @@ def get_window_type(w):
 
 
 def main(args: list):
-    global debug
-    if "debug" in args:
-        debug = True
+    global DEBUG
+    if "DEBUG" in args:
+        DEBUG = True
     while True:
         try:
             time.sleep(0.1)
