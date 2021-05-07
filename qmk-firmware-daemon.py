@@ -142,7 +142,7 @@ def is_qmk_device(device):
 
 all_devices = hid.find_all_hid_devices()
 qmk_devices = list(filter(is_qmk_device, all_devices))
-current_app_type = APP_TYPE.NORMAL
+current_app_type = None
 
 
 def send_payload(payload: list):
@@ -212,10 +212,20 @@ def get_window_type(w):
         return APP_TYPE.NORMAL
     elif title.startswith("Borderlands® 3"):
         return APP_TYPE.GAME1
+    elif title.startswith("SUBVERSE"):
+        return APP_TYPE.GAME1
+    elif title.startswith("Dyson Sphere Program"):
+        return APP_TYPE.GAME1
     elif title.startswith("CODE VEIN"):
         return APP_TYPE.GAME1
+    elif title.startswith("DARK SOULS"):
+        return APP_TYPE.GAME0
+    elif classname.startswith("POEWindowClass"):
+        return APP_TYPE.GAME0
     elif "thinkorswim" in title:
         return APP_TYPE.NORMAL
+    elif "Satisfactory" in title:
+        return APP_TYPE.GAME1
     if size[0] == monitor_w and size[1] == monitor_h:
         return APP_TYPE.GAME0
     else:
