@@ -210,6 +210,8 @@ def get_window_type(w):
         return APP_TYPE.NORMAL
     elif title.endswith("TightVNC Viewer"):
         return APP_TYPE.NORMAL
+    elif title.startswith("EXAPUNKS"):
+        return APP_TYPE.NORMAL
     elif title.startswith("Borderlands® 3"):
         return APP_TYPE.GAME1
     elif title.startswith("SUBVERSE"):
